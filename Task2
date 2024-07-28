@@ -1,0 +1,31 @@
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_ADXL345_U.h>
+#include <SoftwareSerial.h>
+#define HEART_RATE_PIN A0
+#define BLOOD_PRESSURE_PIN A1
+Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
+SoftwareSerial bluetooth(2, 3); 
+void setup() {
+  Serial.begin(9600);
+  bluetooth.begin(9600);
+  if(!accel.begin()) {
+    Serial.println("Ooops, no ADXL345 detected ... Check your wiring!");
+    while(1);
+  }
+  accel.setRange(ADXL345_RANGE_16_G);
+Serial.println("Wearable Health Monitor Started");
+}
+
+void loop() {
+int heartRate = analogRead(HEART_RATE_PIN);
+heartRate = map(heartRate, 0, 1023, 60, 100);
+  int bloodPressure = analogRead(BLOOD_PRESSURE_PIN);
+  bloodPressure = map(bloodPressure, 0, 1023, 80, 120);
+  sensors_event_t event; 
+  accel.getEvent(&event);
+  String data = String("Heart Rate: ") + heartRate + ", Blood Pressure: " + bloodPressure + ", Activity: " + event.acceleration.x + ", " + event.acceleration.y + ", " + event.acceleration.z;
+  bluetooth.println(data);
+  Serial.println(data);
+ delay(1000);
+}
